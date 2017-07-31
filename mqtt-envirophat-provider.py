@@ -73,6 +73,7 @@ def main(sender_constructor):
     server, port = args.server
 
     sender = sender_constructor(server, port, args.topic)
+    next(sender) # prime the generator
 
     motion = motion_detect()
     sleep = suspender()
