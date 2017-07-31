@@ -61,7 +61,7 @@ def mqtt_sender(server, port, topic):
         if l_motion != motion:
             client.publish(topic + '/motion', payload=motion)
         if l_temp != temp:
-            client.publish(topic + '/temp', payload=motion)
+            client.publish(topic + '/temp', payload=temp)
         l_motion, l_temp, _ = data
 
 
