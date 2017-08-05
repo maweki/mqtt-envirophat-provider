@@ -19,12 +19,12 @@ def motion_detector(threshold=0.2):
     from envirophat import motion
     from collections import deque
     readings = deque(maxlen=4)
-    last_y = 0
+    last_z = 0
     while True:
-        readings.append(motion.accelerometer().y)
-        y = sum(readings) / len(readings)
-        yield last_y > 0 and abs(y-last_y) > threshold
-        last_y = y
+        readings.append(motion.accelerometer().z)
+        z = sum(readings) / len(readings)
+        yield last_z > 0 and abs(z-last_z) > threshold
+        last_z = z
 
 def temperature_detector():
     from envirophat import weather
