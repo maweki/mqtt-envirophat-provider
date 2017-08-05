@@ -3,8 +3,9 @@
 def init_argparser():
     import argparse
     parser = argparse.ArgumentParser(description="MQTT provider for envirophat")
-    parser.add_argument('topic', type=str, description="MQTT topic to publish into")
-    parser.add_argument('server', type=str, description="MQTT broker")
+    parser.add_argument('topic', type=str, help="MQTT topic to publish into")
+    parser.add_argument('server', type=str, help="MQTT broker")
+    parser.add_argument('--mock', action='store_const', const=True)
     return parser
 
 def split_server_argument(server_arg, default_port=1816):
@@ -65,14 +66,10 @@ def mqtt_sender(server, port, topic):
         l_motion, l_temp, _ = data
 
 
-def main(sender_constructor):
+def main(sender_constructor, server, port, topic):
     from envirophat import leds
 
-    argpaser = init_argparser()
-    args = argpaser.parse_args()
-    server, port = args.server
-
-    sender = sender_constructor(server, port, args.topic)
+    sender = sender_constructor(server, port, topic)
     next(sender) # prime the generator
 
     motion = motion_detect()
@@ -89,4 +86,8 @@ def main(sender_constructor):
             leds.off()
 
 if __name__ == "__main__":
-    main(mock_sender)
+    argpaser = init_argparser()
+    args = argpaser.parse_args()
+    server, port = split_server_argument(args.server)
+
+    main(mock_sender if args.mock else mqtt_sender, server, port, args.topic)
