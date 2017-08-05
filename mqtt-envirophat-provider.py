@@ -5,6 +5,7 @@ def init_argparser():
     parser = argparse.ArgumentParser(description="MQTT provider for envirophat")
     parser.add_argument('topic', type=str, help="MQTT topic to publish into")
     parser.add_argument('server', type=str, help="MQTT broker")
+    parser.add_argument('-t', type=float, help="temperature correction", default=0.0)
     parser.add_argument('--mock', action='store_const', const=True)
     return parser
 
@@ -26,10 +27,10 @@ def motion_detector(threshold=0.1):
         yield last_z > 0 and abs(z-last_z) > threshold
         last_z = z
 
-def temperature_detector():
+def temperature_detector(correction=0):
     from envirophat import weather
     while True:
-        yield round(weather.temperature(), 1)
+        yield round(weather.temperature(), 1) + correction
 
 def suspender(amount=0.01):
     from time import sleep
@@ -66,7 +67,7 @@ def mqtt_sender(server, port, topic):
         l_motion, l_temp, _ = data
 
 
-def main(sender_constructor, server, port, topic):
+def main(sender_constructor, server, port, topic, temp_correction):
     from envirophat import leds
 
     sender = sender_constructor(server, port, topic)
@@ -74,7 +75,7 @@ def main(sender_constructor, server, port, topic):
 
     motion = motion_detector()
     sleep = suspender()
-    temperature = temperature_detector()
+    temperature = temperature_detector(correction=temp_correction)
 
     data = zip(motion, temperature, sleep)
     last_d = None
@@ -84,10 +85,11 @@ def main(sender_constructor, server, port, topic):
             sender.send(d)
         else:
             leds.off()
+        last_d = d
 
 if __name__ == "__main__":
     argpaser = init_argparser()
     args = argpaser.parse_args()
     server, port = split_server_argument(args.server)
 
-    main(mock_sender if args.mock else mqtt_sender, server, port, args.topic)
+    main(mock_sender if args.mock else mqtt_sender, server, port, args.topic, args.t)
