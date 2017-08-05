@@ -30,7 +30,7 @@ def motion_detector(threshold=0.1):
 def temperature_detector(correction=0):
     from envirophat import weather
     while True:
-        yield round(weather.temperature(), 1) + correction
+        yield round(weather.temperature()+ correction, 1)
 
 def suspender(amount=0.01):
     from time import sleep
