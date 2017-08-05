@@ -14,7 +14,7 @@ def split_server_argument(server_arg, default_port=1816):
     s, p = server_arg.split(':')
     return s, int(p)
 
-def motion_detector(threshold=0.2):
+def motion_detector(threshold=0.1):
     # adapted from https://github.com/pimoroni/enviro-phat/blob/master/examples/motion_detect.py
     from envirophat import motion
     from collections import deque
