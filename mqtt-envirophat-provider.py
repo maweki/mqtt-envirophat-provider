@@ -53,12 +53,14 @@ def mqtt_sender(server, port, topic):
     while True:
         data = yield
         motion, temp, _ = data
+        ret = 0
         if l_motion != motion:
-            client.publish(topic + '/motion', payload=motion)
+            ret, _ = client.publish(topic + '/motion', payload=motion)
         if l_temp != temp:
-            client.publish(topic + '/temp', payload=temp)
+            ret, _ = client.publish(topic + '/temp', payload=temp)
         l_motion, l_temp, _ = data
-
+        if ret != 0:
+            client.connect(server, port, 60)
 
 def main(sender_constructor, server, port, topic, temp_correction):
     from envirophat import leds
