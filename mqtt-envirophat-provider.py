@@ -46,16 +46,9 @@ def mock_sender(server, port, topic):
 def mqtt_sender(server, port, topic):
     import paho.mqtt.client as mqtt
     client = mqtt.Client()
-    connected = False
 
-    def on_connect(client, userdata, flags, rc):
-        connected = True
-
-    client.on_connect = on_connect
     client.connect(server, port, 60)
 
-    while not connected:
-        pass
     l_motion, l_temp, _ = None, None, None
     while True:
         data = yield
