@@ -84,8 +84,18 @@ def main(sender_constructor, server, port, topic, temp_correction):
         last_d = d
 
 if __name__ == "__main__":
+    from time import sleep
     argpaser = init_argparser()
     args = argpaser.parse_args()
     server, port = split_server_argument(args.server)
 
-    main(mock_sender if args.mock else mqtt_sender, server, port, args.topic, args.t)
+    while True:
+        sleep(10)
+        try
+            main(mock_sender if args.mock else mqtt_sender, server, port, args.topic, args.t)
+        except OSError:
+            continue
+        except KeyboardInterrupt:
+            break
+        except Exception:
+            break
