@@ -3,8 +3,8 @@
 def init_argparser():
     import argparse
     parser = argparse.ArgumentParser(description="MQTT provider for envirophat")
-    parser.add_argument('topic', type=str, help="MQTT topic to publish into")
     parser.add_argument('server', type=str, help="MQTT broker")
+    parser.add_argument('topic', type=str, help="MQTT topic to publish into")
     parser.add_argument('-t', type=float, help="temperature correction", default=0.0)
     parser.add_argument('--mock', action='store_const', const=True)
     return parser
