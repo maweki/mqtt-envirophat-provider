@@ -45,6 +45,7 @@ def mock_sender(server, port, topic):
 
 def mqtt_sender(server, port, topic):
     import paho.mqtt.client as mqtt
+    import json
     client = mqtt.Client()
 
     client.connect(server, port, 60)
@@ -55,9 +56,9 @@ def mqtt_sender(server, port, topic):
         motion, temp, _ = data
         ret = 0
         if l_motion != motion:
-            ret, _ = client.publish(topic + '/motion', payload=motion)
+            ret, _ = client.publish(topic + '/motion', payload=json.dumps({"data": motion}))
         if l_temp != temp:
-            ret, _ = client.publish(topic + '/temp', payload=temp)
+            ret, _ = client.publish(topic + '/temp', payload=json.dumps({"data": temp}))
         l_motion, l_temp, _ = data
         if ret != 0:
             client.connect(server, port, 60)
