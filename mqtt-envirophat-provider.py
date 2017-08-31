@@ -64,7 +64,7 @@ def mqtt_sender(server, port, topic):
             client.connect(server, port, 60)
 
 def main(sender_constructor, server, port, topic, temp_correction):
-    from envirophat import leds
+    from envirophat import leds, light
 
     sender = sender_constructor(server, port, topic)
     next(sender) # prime the generator
@@ -77,8 +77,9 @@ def main(sender_constructor, server, port, topic, temp_correction):
     last_d = None
     for d in data:
         if d != last_d:
-            leds.on()
             sender.send(d)
+        if light.light() <= 10:
+            leds.on()
         else:
             leds.off()
         last_d = d
