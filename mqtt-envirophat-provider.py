@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
     while True:
         sleep(10)
-        try
+        try:
             main(mock_sender if args.mock else mqtt_sender, server, port, args.topic, args.t)
         except OSError:
             continue
