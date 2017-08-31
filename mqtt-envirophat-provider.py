@@ -78,10 +78,6 @@ def main(sender_constructor, server, port, topic, temp_correction):
     for d in data:
         if d != last_d:
             sender.send(d)
-        if light.light() <= 10:
-            leds.on()
-        else:
-            leds.off()
         last_d = d
 
 if __name__ == "__main__":
