@@ -6,6 +6,7 @@ def init_argparser():
     parser.add_argument('server', type=str, help="MQTT broker")
     parser.add_argument('topic', type=str, help="MQTT topic to publish into")
     parser.add_argument('-t', type=float, help="temperature correction", default=0.0)
+    parser.add_argument('-i', type=float, help="update interval", default=0.01)
     parser.add_argument('--mock', action='store_const', const=True)
     return parser
 
@@ -63,14 +64,14 @@ def mqtt_sender(server, port, topic):
         if ret != 0:
             client.connect(server, port, 60)
 
-def main(sender_constructor, server, port, topic, temp_correction):
+def main(sender_constructor, server, port, topic, temp_correction, update_interval):
     from envirophat import leds, light
 
     sender = sender_constructor(server, port, topic)
     next(sender) # prime the generator
 
     motion = motion_detector()
-    sleep = suspender()
+    sleep = suspender(update_interval)
     temperature = temperature_detector(correction=temp_correction)
 
     data = zip(motion, temperature, sleep)
@@ -89,7 +90,7 @@ if __name__ == "__main__":
     while True:
         sleep(10)
         try:
-            main(mock_sender if args.mock else mqtt_sender, server, port, args.topic, args.t)
+            main(mock_sender if args.mock else mqtt_sender, server, port, args.topic, args.t, args.i)
         except OSError:
             continue
         except KeyboardInterrupt:
