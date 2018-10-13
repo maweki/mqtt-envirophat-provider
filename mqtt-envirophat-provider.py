@@ -5,6 +5,7 @@ def init_argparser():
     parser = argparse.ArgumentParser(description="MQTT provider for envirophat")
     parser.add_argument('server', type=str, help="MQTT broker")
     parser.add_argument('topic', type=str, help="MQTT topic to publish into")
+    parser.add_argument('--auth', type=str, help="Auth information (\"username\" or \"username:password\")")
     parser.add_argument('-t', type=float, help="temperature correction", default=0.0)
     parser.add_argument('-i', type=float, help="update interval", default=0.01)
     parser.add_argument('--mock', action='store_const', const=True)
@@ -15,6 +16,12 @@ def split_server_argument(server_arg, default_port=1816):
         return server_arg, int(default_port)
     s, p = server_arg.split(':')
     return s, int(p)
+
+def split_auth_argument(auth_arg):
+    if ':' not in auth_arg:
+        return auth_arg, None
+    u, p = auth_arg.split(':')
+    return u, p
 
 def motion_detector(threshold=0.1):
     # adapted from https://github.com/pimoroni/enviro-phat/blob/master/examples/motion_detect.py
@@ -44,10 +51,12 @@ def mock_sender(server, port, topic):
         data = yield
         print(data)
 
-def mqtt_sender(server, port, topic):
+def mqtt_sender(server, port, topic, username=None, password=None):
     import paho.mqtt.client as mqtt
     import json
     client = mqtt.Client()
+    if username:
+        client.username_pw_set(username, password)
 
     client.connect(server, port, 60)
 
@@ -64,10 +73,10 @@ def mqtt_sender(server, port, topic):
         if ret != 0:
             client.connect(server, port, 60)
 
-def main(sender_constructor, server, port, topic, temp_correction, update_interval):
+def main(sender_constructor, server, port, username, password, topic, temp_correction, update_interval):
     from envirophat import leds, light
 
-    sender = sender_constructor(server, port, topic)
+    sender = sender_constructor(server, port, topic, username, password)
     next(sender) # prime the generator
 
     motion = motion_detector()
@@ -86,11 +95,15 @@ if __name__ == "__main__":
     argpaser = init_argparser()
     args = argpaser.parse_args()
     server, port = split_server_argument(args.server)
+    if "auth" in args:
+        username, password = split_auth_argument(args.auth)
+    else:
+        username, password = None, None
 
     while True:
         sleep(10)
         try:
-            main(mock_sender if args.mock else mqtt_sender, server, port, args.topic, args.t, args.i)
+            main(mock_sender if args.mock else mqtt_sender, server, port, username, password, args.topic, args.t, args.i)
         except OSError:
             continue
         except KeyboardInterrupt:
